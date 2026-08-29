@@ -35,3 +35,6 @@ body { margin: 0; background: var(--background); color: var(--foreground); font-
 button, input { font: inherit; }
 button { cursor: pointer; }
 ::selection { background: rgba(16, 185, 129, .2); }
+.shell { width: min(100%, 1500px); margin-inline: auto; border-inline: 1px solid var(--border); }
+.eyebrow { font-family: var(--font-mono); font-size: 10px; line-height: 1.2; letter-spacing: .2em; text-transform: uppercase; }
+.glass { background: rgba(255,255,255,.025); backdrop-filter: blur(14px); }
