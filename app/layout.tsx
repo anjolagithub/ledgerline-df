@@ -7,8 +7,8 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
 
 export const metadata: Metadata = {
-  title: 'Meridian Admin | Operations Console',
-  description: 'High-density infrastructure, verification, identity, and security operations console.',
+  title: 'LedgerLine | Credit history proven, not promised',
+  description: 'A cross-chain credit registry built on Creditcoin\'s Attestcoin Protocol.',
   generator: 'v0.app',
 }
 
