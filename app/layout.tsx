@@ -6,8 +6,8 @@ const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
 
 export const metadata: Metadata = {
-  title: 'LedgerLine | Credit history proven, not promised',
-  description: 'A cross-chain credit registry built on Creditcoin\'s Attestcoin Protocol.',
+  title: 'LedgerLine Core | Cross-chain credit registry',
+  description: 'Live cryptographic credit registry reads across Sepolia and Creditcoin CC3.',
 }
 
 export const viewport: Viewport = {
