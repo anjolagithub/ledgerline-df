@@ -17,21 +17,21 @@
 
 :root {
   color-scheme: dark;
-  --background: #0a0a0a;
+  --background: #030303;
   --foreground: #cbd5e1;
-  --card: #171717;
+  --card: #060606;
   --card-foreground: #cbd5e1;
-  --border: rgba(255, 255, 255, 0.08);
-  --muted: #171717;
+  --border: #1a1a1a;
+  --muted: #0a0a0a;
   --muted-foreground: #64748b;
   --primary: #10b981;
-  --primary-foreground: #06120e;
-  --radius: 0.75rem;
+  --primary-foreground: #030303;
+  --radius: 0rem;
 }
 
 * { box-sizing: border-box; }
-html { background: #0a0a0a; }
-body { margin: 0; background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; }
+html { background: #030303; }
+body { margin: 0; background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; background-image: radial-gradient(circle at 50% -20%, rgba(16,185,129,.07), transparent 38%), linear-gradient(135deg, rgba(255,255,255,.018) 1px, transparent 1px); background-size: auto, 44px 44px; }
 button, input { font: inherit; }
 button { cursor: pointer; }
 ::selection { background: rgba(16, 185, 129, .2); }
