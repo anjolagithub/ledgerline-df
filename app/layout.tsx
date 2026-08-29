@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { WalletProvider } from '../lib/WalletContext'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
@@ -20,7 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className="bg-[#0A0A0A]">
       <body className={`${geist.variable} ${geistMono.variable} antialiased`}>
-        {children}
+        <WalletProvider>{children}</WalletProvider>
       </body>
     </html>
   )
