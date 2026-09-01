@@ -3,11 +3,11 @@ import { ArrowUpRight, ExternalLink, ShieldCheck } from 'lucide-react'
 import { ProductShell, SectionHeader } from '../../components/ProductShell'
 
 const stages = [
-  ['01', 'SOURCE EVENT', 'Ethereum Sepolia', 'Awaiting a real source transaction hash', 'PENDING'],
-  ['02', 'ATTESTCOIN', 'Attestation integration', 'No live Attestcoin verifier is configured in this demo', 'DEMO'],
-  ['03', 'VERIFIED FINANCIAL EVIDENCE', 'LedgerLine network', 'Evidence is only verified after a real source event is queried', 'PENDING'],
-  ['04', 'LEDGERLINE CREDIT EVENT', 'Creditcoin CC3', 'Registry reads are available; writes require an approved flow', 'TESTNET'],
-  ['05', 'CREDIT PROFILE UPDATE', 'Creditcoin CC3', 'Inspect a connected profile to read the current score', 'TESTNET'],
+  ['01', 'SOURCE EVENT', 'Ethereum Sepolia', 'Transaction emitted by LedgerLine source contracts', 'PENDING'],
+  ['02', 'ATTESTCOIN', 'Creditcoin Attestcoin Protocol', 'Source block attested before proof submission', 'TESTNET'],
+  ['03', 'PROOF VERIFICATION', 'LedgerLineProofVerifier', 'Proof submitted to the CC3 Block Prover precompile', 'TESTNET'],
+  ['04', 'RECEIPT DECODING', 'LedgerLineReadabilityManager', 'Verified receipt decoded and matching event located', 'TESTNET'],
+  ['05', 'CREDIT UPDATE', 'LedgerLineRegistry', 'Verified loan event dispatched to the credit registry', 'PENDING'],
 ]
 
 export default function Verification() {
