@@ -5,6 +5,13 @@ export const ADDRESSES = {
   blockProver: '0x0000000000000000000000000000000000000FD2',
   sourceRegistry: '0x1Af3D4ED1D2592DdAD9c13A3004006c9785eC6fF',
   sourceSettlement: '0xa00DeE06b5d8DD4889683d2d526a744C2Bd67297',
+  financing: '0x22fA5c1C36Cc1F7557B932dE7aCDa354ee4F6F52',
+  demoToken: '0xF77cEEa40d44C4b7c5dFF7DD31dc0E281FaFeE55',
+} as const
+
+export const EXPLORERS = {
+  cc3: 'https://creditcoin-testnet.blockscout.com',
+  sepolia: 'https://sepolia.etherscan.io',
 } as const
 
 export const RPC = {
@@ -21,3 +28,4 @@ export const SETTLEMENT_ABI = ['event LoanFunded(uint256 indexed loanId, address
 export const TOKEN_ABI = ['function approve(address spender, uint256 amount) returns (bool)']
 export const DEMO_TOKEN = '0xF77cEEa40d44C4b7c5dFF7DD31dc0E281FaFeE55'
 export const MANAGER_ABI = ['event QueryProcessed(bytes32 indexed queryId, uint8 action)']
+export const FINANCING_ABI = ['function creditRegistry() view returns (address)', 'function registerInvoice(string buyerName, uint256 amount, uint256 dueTimestamp) returns (uint256)', 'function calculateEligibility(address borrower, uint256 invoiceAmount) view returns (bool eligible, uint256 maxAdvance, uint8 advanceRatePercent)', 'function requestFinancing(uint256 invoiceId)', 'function getInvoice(uint256 invoiceId) view returns (tuple)']

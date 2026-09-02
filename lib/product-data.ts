@@ -8,6 +8,8 @@ export const demoInvoices: Invoice[] = [
   { id: 'INV-2046', issuer: 'Arcadia Systems', buyer: 'Morrow Industrial', amount: 48600, currency: 'USDC', due: '2026-09-06', status: 'Pending', risk: 'Medium', dataState: 'DEMO / TESTNET DATA' },
 ]
 
+export const overviewMetricsAreDemo = true
+
 export const overviewTimeline: TimelineEvent[] = [
   { label: 'Demo invoice record loaded', meta: 'Illustrative interface data', tone: 'slate' },
   { label: 'Credit profile query available', meta: 'Reads LedgerLineRegistry on CC3', tone: 'green' },

@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react'
 import { ProductShell, SectionHeader } from '../../components/ProductShell'
-import { ADDRESSES, CHAIN_IDS } from '../../lib/contracts'
+import { ADDRESSES, CHAIN_IDS, EXPLORERS } from '../../lib/contracts'
 
 const contracts = [
   ['Ethereum Sepolia', 'LedgerLineSourceRegistry', ADDRESSES.sourceRegistry],
@@ -8,7 +8,7 @@ const contracts = [
   ['Creditcoin CC3 Testnet', 'LedgerLineRegistry', ADDRESSES.registry],
   ['Creditcoin CC3 Testnet', 'LedgerLineProofVerifier', ADDRESSES.proofVerifier],
   ['Creditcoin CC3 Testnet', 'LedgerLineReadabilityManager', ADDRESSES.manager],
-  ['Creditcoin CC3 Testnet', 'LedgerLineFinancing', 'NOT CONFIGURED'],
+  ['Creditcoin CC3 Testnet', 'LedgerLineFinancing', ADDRESSES.financing],
 ]
 
 export default function Developers() {
