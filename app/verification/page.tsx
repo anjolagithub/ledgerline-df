@@ -4,7 +4,7 @@ import { ProductShell, SectionHeader } from '../../components/ProductShell'
 
 const stages = [
   ['01', 'SOURCE EVENT', 'Ethereum Sepolia', 'Transaction emitted by LedgerLine source contracts', 'PENDING'],
-  ['02', 'ATTESTCOIN', 'Creditcoin Attestcoin Protocol', 'Source block attested before proof submission', 'TESTNET'],
+  ['02', 'ATTESTCOIN', 'Creditcoin Attestcoin network', 'Source block attested before proof submission', 'TESTNET'],
   ['03', 'PROOF VERIFICATION', 'LedgerLineProofVerifier', 'Proof submitted to the CC3 Block Prover precompile', 'TESTNET'],
   ['04', 'RECEIPT DECODING', 'LedgerLineReadabilityManager', 'Verified receipt decoded and matching event located', 'TESTNET'],
   ['05', 'CREDIT UPDATE', 'LedgerLineRegistry', 'Verified loan event dispatched to the credit registry', 'PENDING'],
