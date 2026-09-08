@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import { ADDRESSES, MANAGER_ABI, REGISTRY_ABI, RPC, SETTLEMENT_ABI, SOURCE_REGISTRY_ABI } from './contracts'
 
 export type CreditProfile = { score: number; totalVerifiedRepayments: string; completedLoanCount: number; lastUpdated: number }
-export type LogRow = { chain: 'sepolia' | 'cc3'; event: string; hash: string }
+export type LogRow = { chain: 'sepolia' | 'cc3'; event: string; hash: string; blockNumber?: number; timestamp?: number }
 
 export async function getCreditProfile(address: string): Promise<CreditProfile> {
   if (!ethers.isAddress(address)) throw new Error('Invalid wallet address')
@@ -24,12 +24,8 @@ export async function getAttestationLog(): Promise<LogRow[]> {
     settlement.queryFilter(settlement.filters.LoanRepaid(), -50000).catch(() => []),
     manager.queryFilter(manager.filters.QueryProcessed(), -5000).catch(() => []),
   ])
-  return [
-    ...registered.map((e: any) => ({ chain: 'sepolia' as const, event: 'LoanRegistered', hash: e.transactionHash })),
-    ...funded.map((e: any) => ({ chain: 'sepolia' as const, event: 'LoanFunded', hash: e.transactionHash })),
-    ...repaid.map((e: any) => ({ chain: 'sepolia' as const, event: 'LoanRepaid', hash: e.transactionHash })),
-    ...verified.map((e: any) => ({ chain: 'cc3' as const, event: 'QueryProcessed (Attested)', hash: e.transactionHash })),
-  ]
+  const rows = [...registered.map((e: any) => ({ chain: 'sepolia' as const, event: 'LoanRegistered', hash: e.transactionHash, blockNumber: e.blockNumber })), ...funded.map((e: any) => ({ chain: 'sepolia' as const, event: 'LoanFunded', hash: e.transactionHash, blockNumber: e.blockNumber })), ...repaid.map((e: any) => ({ chain: 'sepolia' as const, event: 'LoanRepaid', hash: e.transactionHash, blockNumber: e.blockNumber })), ...verified.map((e: any) => ({ chain: 'cc3' as const, event: 'QueryProcessed (Attested)', hash: e.transactionHash, blockNumber: e.blockNumber }))]
+  return Promise.all(rows.map(async (row) => { try { const provider = row.chain === 'cc3' ? cc3 : sepolia; const block = await provider.getBlock(row.blockNumber); return { ...row, timestamp: block?.timestamp } } catch { return row } }))
 }
 
 export async function checkNetworkStatus() {
