@@ -2,16 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Activity, BadgeCheck, BookOpen, FileText, LayoutDashboard, Landmark, Menu, ShieldCheck, X } from 'lucide-react'
+import { Activity, BadgeCheck, BookOpen, LayoutDashboard, Landmark, Menu, ShieldCheck, X } from 'lucide-react'
 import { useState } from 'react'
 import { WalletStatus } from './WalletStatus'
 
 const nav = [
-  ['Overview', '/', LayoutDashboard],
+  ['Landing', '/', LayoutDashboard],
   ['Credit Profile', '/credit-profile', BadgeCheck],
-  ['Invoices', '/invoices', FileText],
-  ['Financing', '/financing', Landmark],
   ['Verification', '/verification', ShieldCheck],
+  ['Financing', '/financing', Landmark],
   ['Developers', '/developers', BookOpen],
 ] as const
 
