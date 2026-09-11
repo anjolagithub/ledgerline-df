@@ -9,6 +9,7 @@ import { WalletStatus } from './WalletStatus'
 
 const nav = [
   ['Landing', '/', LayoutDashboard],
+  ['Core Dashboard', '/dashboard', LayoutDashboard],
   ['Credit Profile', '/credit-profile', BadgeCheck],
   ['Verification', '/verification', ShieldCheck],
   ['Financing', '/financing', Landmark],
