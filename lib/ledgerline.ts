@@ -28,6 +28,52 @@ export async function getAttestationLog(): Promise<LogRow[]> {
   return Promise.all(rows.map(async (row) => { try { const provider = row.chain === 'cc3' ? cc3 : sepolia; const block = await provider.getBlock(row.blockNumber); return { ...row, timestamp: block?.timestamp } } catch { return row } }))
 }
 
+export type ProofApiPayload = { headerNumber: string | number; txBytes: string; merkleProof: string[]; continuityProof: string[] }
+
+export const PROOF_API = 'https://proof-gen-api.cc3-testnet.creditcoin.network/api/v1'
+
+export async function getSepoliaTransaction(txHash: string) {
+  const provider = new ethers.JsonRpcProvider(RPC.sepolia)
+  const receipt = await provider.getTransactionReceipt(txHash)
+  if (!receipt) throw new Error('Source transaction is not mined yet.')
+  return { blockNumber: receipt.blockNumber, status: receipt.status, logs: receipt.logs }
+}
+
+async function proofApi<T>(path: string): Promise<T> {
+  const response = await fetch(`${PROOF_API}${path}`, { cache: 'no-store' })
+  if (!response.ok) throw new Error(`Proof service returned HTTP ${response.status}.`)
+  return response.json() as Promise<T>
+}
+
+export async function getAttestedHeight() {
+  const payload = await proofApi<{ height?: string | number; attestedHeight?: string | number }>('/attested-height/1')
+  const height = payload.height ?? payload.attestedHeight
+  if (height === undefined) throw new Error('Proof service returned no attested height.')
+  return Number(height)
+}
+
+export async function getProofByTransaction(txHash: string) {
+  return proofApi<ProofApiPayload>(`/proof-by-tx/1/${encodeURIComponent(txHash)}`)
+}
+
+export async function waitForAttestation(blockNumber: number, onProgress?: (height: number) => void, timeoutMs = 120_000) {
+  const started = Date.now()
+  while (Date.now() - started < timeoutMs) {
+    const height = await getAttestedHeight()
+    onProgress?.(height)
+    if (height >= blockNumber) return height
+    await new Promise((resolve) => setTimeout(resolve, 5_000))
+  }
+  throw new Error(`Attestation has not reached source block ${blockNumber.toLocaleString()} within the waiting window.`)
+}
+
+export async function submitReadabilityProof(signer: ethers.Signer, action: number, proof: ProofApiPayload) {
+  const manager = new ethers.Contract(ADDRESSES.manager, MANAGER_ABI, signer)
+  const transaction = await manager.submitProof(action, proof.headerNumber, proof.txBytes, proof.merkleProof, proof.continuityProof)
+  const receipt = await transaction.wait()
+  return { hash: transaction.hash, status: receipt?.status ?? 0, blockNumber: receipt?.blockNumber ?? null }
+}
+
 export async function checkNetworkStatus() {
   const results = { cc3: false, sepolia: false }
   try { await new ethers.JsonRpcProvider(RPC.cc3).getBlockNumber(); results.cc3 = true } catch {}

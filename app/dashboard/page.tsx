@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { BrowserProvider, JsonRpcProvider, isAddress } from 'ethers'
 import { Activity, ArrowUpRight, Check, CircleAlert, Copy, Database, ExternalLink, LayoutDashboard, Loader2, Network, Search, ShieldCheck, Terminal, WalletCards } from 'lucide-react'
 import { ADDRESSES, EXAMPLE_ADDRESS, RPC } from '../../lib/contracts'
-import { getAttestationLog, getCreditProfile } from '../../lib/ledgerline'
+import { getAttestationLog, getCreditProfile, getProofByTransaction, getSepoliaTransaction, submitReadabilityProof, waitForAttestation } from '../../lib/ledgerline'
+import { useWalletContext } from '../../lib/WalletContext'
 import { AttestationLog } from '../../components/AttestationLog'
 
 const PRECOMPILE = '0x0000000000000000000000000000000000000FD2'
@@ -24,31 +25,47 @@ function StageBadge({ state }: { state: 'complete' | 'active' | 'pending' | 'err
 }
 
 function ProofLifecycle({ wallet, onConnect }: { wallet: string; onConnect: () => Promise<void> }) {
+  const { signer } = useWalletContext()
   const [hash, setHash] = useState('')
   const [eventType, setEventType] = useState('Registered')
   const [stage, setStage] = useState<Stage>('idle')
-  const [block, setBlock] = useState(11674880)
-  const [longPoll, setLongPoll] = useState(false)
+  const [block, setBlock] = useState<number | null>(null)
+  const [attestedHeight, setAttestedHeight] = useState<number | null>(null)
+  const [error, setError] = useState('')
+  const [receiptHash, setReceiptHash] = useState('')
 
   const run = async () => {
-    if (!isAddress(hash)) return
-    setStage('mining'); await new Promise((resolve) => setTimeout(resolve, 900))
-    setStage('syncing')
-    for (let i = 0; i < 4; i += 1) { await new Promise((resolve) => setTimeout(resolve, 350)); setBlock((value) => value + 1) }
-    setStage('proving'); await new Promise((resolve) => setTimeout(resolve, longPoll ? 1600 : 900))
-    setStage(longPoll ? 'dispatched' : 'timeout')
+    setError(''); setReceiptHash('')
+    if (!/^0x[0-9a-fA-F]{64}$/.test(hash)) return setError('Enter a valid Sepolia transaction hash.')
+    if (!signer) { await onConnect(); return }
+    try {
+      setStage('mining')
+      const source = await getSepoliaTransaction(hash)
+      if (source.status === 0) throw new Error('The source transaction reverted on Sepolia.')
+      setBlock(source.blockNumber)
+      setStage('syncing')
+      await waitForAttestation(source.blockNumber, setAttestedHeight)
+      setStage('proving')
+      const proof = await getProofByTransaction(hash)
+      const action = eventType === 'Registered' ? 0 : eventType === 'Funded' ? 1 : 2
+      const receipt = await submitReadabilityProof(signer, action, proof)
+      if (!receipt || receipt.status !== 1) throw new Error('CC3 proof submission reverted.')
+      setReceiptHash(receipt.hash); setStage('dispatched')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Proof submission failed.')
+      setStage('timeout')
+    }
   }
 
-  const retry = async () => { setLongPoll(true); await run() }
-  const state = (target: number): 'complete' | 'active' | 'pending' | 'error' => stage === 'timeout' && target === 3 ? 'error' : ({ 1: ['syncing', 'proving', 'dispatched'].includes(stage) ? 'complete' : stage === 'mining' ? 'active' : 'pending', 2: ['proving', 'dispatched'].includes(stage) ? 'complete' : stage === 'syncing' ? 'active' : 'pending', 3: stage === 'dispatched' ? 'complete' : stage === 'proving' ? 'active' : 'pending' } as Record<number, 'complete' | 'active' | 'pending' | 'error'>)[target]
+  const state = (target: number): 'complete' | 'active' | 'pending' | 'error' => stage === 'timeout' ? (target >= 2 ? 'error' : 'pending') : ({ 1: ['syncing', 'proving', 'dispatched'].includes(stage) ? 'complete' : stage === 'mining' ? 'active' : 'pending', 2: ['proving', 'dispatched'].includes(stage) ? 'complete' : stage === 'syncing' ? 'active' : 'pending', 3: stage === 'dispatched' ? 'complete' : stage === 'proving' ? 'active' : 'pending' } as Record<number, 'complete' | 'active' | 'pending' | 'error'>)[target]
 
   return <section className="border border-border bg-[#080808] p-5 sm:p-6">
     <div className="mb-6 flex items-start justify-between gap-4"><div><p className="eyebrow text-primary">Cross-chain proof lifecycle tracker</p><h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-100">Verification Desk</h2></div><Terminal className="text-slate-600" size={18} /></div>
     <div className="space-y-3">
       <div className="border border-border bg-[#050505] p-4"><div className="flex items-center justify-between gap-3"><div><p className="font-mono text-[10px] uppercase tracking-[.1em] text-slate-200">01 / Source event mining</p><p className="mt-1 text-xs text-slate-500">Mined on Ethereum Sepolia</p></div><StageBadge state={state(1)} /></div><div className="mt-4 grid gap-3 sm:grid-cols-[1fr_150px_auto]"><input value={hash} onChange={(event) => setHash(event.target.value)} placeholder="0x transaction hash" aria-label="Source transaction hash" className="min-w-0 border border-border bg-background px-3 py-2 font-mono text-xs text-slate-200 outline-none placeholder:text-slate-700 focus:border-primary/50" /><select value={eventType} onChange={(event) => setEventType(event.target.value)} aria-label="Event type" className="border border-border bg-background px-3 py-2 font-mono text-xs text-slate-300 outline-none"><option>Registered</option><option>Funded</option><option>Repaid</option></select><button onClick={run} disabled={stage === 'mining' || stage === 'syncing' || stage === 'proving'} className="border border-primary/40 bg-primary/10 px-4 py-2 font-mono text-[10px] uppercase tracking-[.1em] text-primary disabled:opacity-40">{stage === 'mining' ? 'Mining…' : 'Start proof'}</button></div></div>
-      <div className="border border-border bg-[#050505] p-4"><div className="flex items-center justify-between gap-3"><div><p className="font-mono text-[10px] uppercase tracking-[.1em] text-slate-200">02 / Hub indexer sync & attestation</p><p className="mt-1 text-xs text-slate-500">{stage === 'syncing' ? 'Polling Creditcoin Proof Server Indexer…' : 'Awaiting source event submission'}</p></div><StageBadge state={state(2)} /></div><p className="mt-4 font-mono text-xs text-slate-400">Target block height: <span className="text-primary">{block.toLocaleString()} / {(block + (stage === 'syncing' ? 1 : 0)).toLocaleString()}</span> <span className="ml-2 text-slate-700">{stage === 'syncing' ? '120s max window' : ''}</span></p></div>
+      <div className="border border-border bg-[#050505] p-4"><div className="flex items-center justify-between gap-3"><div><p className="font-mono text-[10px] uppercase tracking-[.1em] text-slate-200">02 / Hub indexer sync & attestation</p><p className="mt-1 text-xs text-slate-500">{stage === 'syncing' ? 'Polling Creditcoin Proof Server Indexer…' : 'Awaiting source event submission'}</p></div><StageBadge state={state(2)} /></div><p className="mt-4 font-mono text-xs text-slate-400">Source block: <span className="text-primary">{block === null ? '—' : block.toLocaleString()}</span>{attestedHeight !== null && <span className="ml-3 text-slate-500">attested height: <span className="text-primary">{attestedHeight.toLocaleString()}</span></span>} <span className="ml-2 text-slate-700">{stage === 'syncing' ? 'polling every 5s · 120s max' : ''}</span></p></div>
       <div className="border border-border bg-[#050505] p-4"><div className="flex items-center justify-between gap-3"><div><p className="font-mono text-[10px] uppercase tracking-[.1em] text-slate-200">03 / ZK proof generation</p><p className="mt-1 text-xs text-slate-500">{stage === 'proving' ? 'Generating cryptographic receipt proof' : 'Receipt proof worker idle'}</p></div><StageBadge state={state(3)} /></div>{stage === 'proving' && <div className="mt-4 flex items-center gap-3"><Loader2 className="animate-spin text-primary" size={18} /><span className="font-mono text-xs text-primary">Generating cryptographic receipt proof</span></div>}{stage === 'timeout' && <div className="mt-4 border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200">API request timed out (5000ms exceeded). <button onClick={retry} className="ml-2 underline underline-offset-4">Retry proof generation with long-polling</button></div>}</div>
-      <div className="border border-primary/25 bg-primary/[.04] p-4"><div className="flex items-center justify-between gap-3"><div><p className="font-mono text-[10px] uppercase tracking-[.1em] text-slate-200">04 / CC3 registry dispatch</p><p className="mt-1 text-xs text-slate-500">{stage === 'dispatched' ? 'Registry Updated. Replay Protection Checked.' : 'Proof dispatch awaits verification'}</p></div><StageBadge state={stage === 'dispatched' ? 'complete' : 'pending'} /></div><p className="mt-4 break-all font-mono text-[10px] text-primary">{PRECOMPILE}</p></div>
+      <div className="border border-primary/25 bg-primary/[.04] p-4"><div className="flex items-center justify-between gap-3"><div><p className="font-mono text-[10px] uppercase tracking-[.1em] text-slate-200">04 / CC3 registry dispatch</p><p className="mt-1 text-xs text-slate-500">{stage === 'dispatched' ? 'Registry Updated. Replay Protection Checked.' : 'Proof dispatch awaits verification'}</p></div><StageBadge state={stage === 'dispatched' ? 'complete' : 'pending'} /></div><p className="mt-4 break-all font-mono text-[10px] text-primary">{READABILITY_MANAGER}</p>{receiptHash && <a href={`https://creditcoin-testnet.blockscout.com/tx/${receiptHash}`} target="_blank" rel="noreferrer" className="mt-3 flex items-center gap-2 font-mono text-[10px] text-primary underline underline-offset-4">Confirmed CC3 receipt: {receiptHash.slice(0, 10)}…{receiptHash.slice(-8)} <ExternalLink size={12} /></a>}{error && <div className="mt-3 border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200">{error}</div>}</div>
     </div>
   </section>
 }

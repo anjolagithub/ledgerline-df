@@ -27,5 +27,5 @@ export const SOURCE_REGISTRY_ABI = ['event LoanRegistered(uint256 indexed loanId
 export const SETTLEMENT_ABI = ['event LoanFunded(uint256 indexed loanId, address indexed lender, address indexed borrower, uint256 amount)', 'event LoanRepaid(uint256 indexed loanId, uint256 amount)', 'function repayLoan(uint256 loanId, address lender, address token, uint256 amount)']
 export const TOKEN_ABI = ['function approve(address spender, uint256 amount) returns (bool)']
 export const DEMO_TOKEN = '0xF77cEEa40d44C4b7c5dFF7DD31dc0E281FaFeE55'
-export const MANAGER_ABI = ['event QueryProcessed(bytes32 indexed queryId, uint8 action)']
+export const MANAGER_ABI = ['event QueryProcessed(bytes32 indexed queryId, uint8 action)', 'function submitProof(uint8 action, uint256 headerNumber, bytes txBytes, bytes32[] merkleProof, bytes32[] continuityProof)']
 export const FINANCING_ABI = ['function creditRegistry() view returns (address)', 'function registerInvoice(string buyerName, uint256 amount, uint256 dueTimestamp) returns (uint256)', 'function calculateEligibility(address borrower, uint256 invoiceAmount) view returns (bool eligible, uint256 maxAdvance, uint8 advanceRatePercent)', 'function requestFinancing(uint256 invoiceId)', 'function getInvoice(uint256 invoiceId) view returns (tuple)']
