@@ -1,0 +1,30 @@
+Refactor the LedgerLine dashboard to strengthen technical credibility 
+for hackathon judges, using only real on-chain data already available 
+via lib/ledgerline.ts (getAttestationLog, getCreditProfile).
+
+1. Add a "System Status" badge in the navbar reading "Connected to 
+   Creditcoin CC3 Testnet" — driven by the real checkNetworkStatus() 
+   result, not a static label. If the RPC is unreachable, the badge 
+   must say so honestly.
+
+2. In the "Recent LedgerLine Events" list (already populated from 
+   getAttestationLog()), add a small "Verify on CC3 Explorer" link 
+   next to each row, pointing to 
+   https://creditcoin-testnet.blockscout.com/tx/{row.hash} for CC3 
+   events and https://sepolia.etherscan.io/tx/{row.hash} for Sepolia 
+   events. Do not add this to any hardcoded or placeholder row — 
+   only to real fetched events.
+
+3. In the Developers section, render the real deployed contract 
+   addresses already defined in lib/contracts.ts (ADDRESSES.registry, 
+   ADDRESSES.manager, ADDRESSES.proofVerifier, ADDRESSES.financing, 
+   ADDRESSES.sourceRegistry, ADDRESSES.sourceSettlement) in a 
+   monospace table, each linking to its real explorer page.
+
+4. Remove any remaining hardcoded/placeholder rows or invoice data 
+   that isn't sourced from a real contract read or explicitly 
+   labeled as demo data, per the existing product-data.ts dataState 
+   labeling convention already used elsewhere in this app.
+
+Keep the existing obsidian/monospace aesthetic. Do not invent names, 
+amounts, or timestamps anywhere.
